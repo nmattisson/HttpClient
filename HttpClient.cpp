@@ -1,64 +1,116 @@
 #include "HttpClient.h"
 
-// Connecting to an ip instead of a host is implemented, but untested and
-// therefore commented out for now.
-// HttpClient::HttpClient(IPAddress _ip, uint16_t _port)
-// {
-//   ip = _ip;
-//   port = _port;
-//   host = NULL;
-// }
-
+/**
+ * Constructor, variables will initialise the TCPClient.
+ */
 HttpClient::HttpClient(const char *_host, uint16_t _port)
 {
   host = _host;
   port = _port;
-  //ip = INADDR_NONE;
 }
 
-http_response_t* HttpClient::request(http_request_t *aRequest, const char* aHttpMethod)
+/**
+ * Method to send a header, should only be called from within the class.
+ */
+void HttpClient::sendHeader(const char* aHeaderName, const char* aHeaderValue)
+{
+  client.print(aHeaderName);
+  client.print(": ");
+  client.println(aHeaderValue);
+
+  Serial.print(aHeaderName);
+  Serial.print(": ");
+  Serial.println(aHeaderValue);
+}
+
+void HttpClient::sendHeader(const char* aHeaderName, const int aHeaderValue)
+{
+  client.print(aHeaderName);
+  client.print(": ");
+  client.println(aHeaderValue);
+
+  Serial.print(aHeaderName);
+  Serial.print(": ");
+  Serial.println(aHeaderValue);
+}
+
+void HttpClient::sendHeader(const char* aHeaderName)
+{
+  client.println(aHeaderName);
+  Serial.println(aHeaderName);
+}
+
+/**
+ * Method to send an HTTP Request. Set the headers and the options in the
+ * aRequest struct.
+ */
+http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t headers[], const char* aHttpMethod)
 {
 
-  bool connected;
   if (client.connected()) {
-    Serial.println("HttpClient: Connection active.");
-    connected = true;
-  // }  else if (host == NULL) {
-  //   Serial.println("HttpClient: Connecting with IP.");
-  //   connected = client.connect(ip, port);
+    Serial.println("HttpClient>\tConnection active.");
+  } else if (client.connect(host, port)) {
+    Serial.print("HttpClient>\tConnecting with Hostname: ");
+    Serial.println(host);
   } else {
-    Serial.println("HttpClient: Connecting with Hostname.");
-    connected = client.connect(host, port);
-  }
-
-  if(connected) {
-    Serial.println("HttpClient: Starting HTTP Request.");
-  } else {
-    Serial.println("HttpClient: Connection failed.");
+    Serial.println("HttpClient>\tConnection failed.");
     client.stop();
     return NULL;
   }
 
   // Send HTTP Request
+  Serial.println("\r\nHttpClient>\tStart of HTTP Request.");
+
+  // Send initial headers (only HTTP 1.0 is supported for now).
   client.print(aHttpMethod);
   client.print(" ");
   client.print(aRequest->path);
   client.print(" HTTP/1.0\r\n");
-  client.print("HOST: ");
-  client.println(host);
-  client.println("Connection: close");
-  client.println();
-  client.flush();
 
-  Serial.println("\r\nHttpClient: Start of HTTP Request.");
   Serial.print(aHttpMethod);
   Serial.print(" ");
   Serial.print(aRequest->path);
   Serial.print(" HTTP/1.0\r\n");
-  Serial.print("HOST: ");
-  Serial.println(host);
-  Serial.println("Connection: close");
-  Serial.println("HttpClient: End of HTTP Request.");
+
+  // Send General and Request Headers.
+  sendHeader("Connection", "close");
+  sendHeader("HOST", host);
+
+  //Send Entity Headers
+  // TODO: Check the standard, currently sending Content-Length : 0 for empty
+  // POST requests, and no content-length for other types.
+  if (aRequest->body != NULL) {
+    sendHeader("Content-Length", sizeof(aRequest->body));
+  } else if (aHttpMethod == HTTP_METHOD_POST) {
+    sendHeader("Content-Length", 0);
+  }
+
+  if (headers != NULL)
+  {
+    int i = 0;
+    while (headers[i].header != NULL)
+    {
+      if (headers[i].value != NULL) {
+        sendHeader(headers[i].header, headers[i].value);
+      } else {
+        sendHeader(headers[i].header);
+      }
+      i++;
+    }
+  }
+
+  // Empty line to finish headers
+  client.println();
+  Serial.println();
+  // TODO: Flush seems to do nothing at the moment, causing an extra character
+  // to be appended to the body and resulting in technically invalid JSON. Most
+  // parsers will probably handle it just fine though.
+  client.flush();
+
+  // Send HTTP Request body.
+  Serial.println(aRequest->body);
+  client.println(aRequest->body);
+  Serial.println("HttpClient>\tEnd of HTTP Request.");
 
   int bytes = 0;
   while(!bytes && client.connected()) {
@@ -66,29 +118,30 @@ http_response_t* HttpClient::request(http_request_t *aRequest, const char* aHttp
     delay(200);
   }
 
-  Serial.println("\r\nHttpClient: Start of HTTP Response.");
+  Serial.println("\r\nHttpClient>\tStart of HTTP Response.");
   for (int i = 0;  i  < bytes; i++) {
     char c = client.read();
     Serial.print(c);
     if (c == -1) {
-      Serial.println("HttpClient Error: No data available.");
+      Serial.println("HttpClient>\tError: No data available.");
       break;
     }
 
     buffer[i] = c;
   }
 
-  Serial.println("\r\nHttpClient: End of HTTP Response.\n");
+  Serial.println("\r\nHttpClient>\tEnd of HTTP Response.\n");
   client.stop();
 
   String raw_response(buffer);
+  // Not super elegant way of finding the status code, but it works.
   String statusCode = raw_response.substring(9,12);
-  Serial.print("HttpClient Status Code: ");
+  Serial.print("HttpClient>\tStatus Code: ");
   Serial.println(statusCode);
 
   int bodyPos = raw_response.indexOf("\r\n\r\n");
   if (bodyPos == -1) {
-    Serial.println("HttpClient Error: Can not find HTTP response body.");
+    Serial.println("HttpClient>\tError: Can not find HTTP response body.");
     return NULL;
   }
   // Return the entire message body from bodyPos+4 till end.
