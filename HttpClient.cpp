@@ -102,9 +102,6 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
     // Empty line to finish headers
     client.println();
     Serial.println();
-    // TODO: Flush seems to do nothing at the moment, causing an extra character
-    // to be appended to the body and resulting in technically invalid JSON. Most
-    // parsers will probably handle it just fine though.
     client.flush();
 
     // Send HTTP Request body.
