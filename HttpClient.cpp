@@ -81,7 +81,7 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
     // POST requests, and no content-length for other types.
     if (aRequest->body != NULL) {
         sendHeader("Content-Length", (aRequest->body).length());
-    } else if (aHttpMethod == HTTP_METHOD_POST) {
+    } else if (strcmp(aHttpMethod, HTTP_METHOD_POST) == 0) { //Check to see if its a Post method.
         sendHeader("Content-Length", 0);
     }
 
