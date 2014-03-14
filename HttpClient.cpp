@@ -80,7 +80,7 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
   // TODO: Check the standard, currently sending Content-Length : 0 for empty
   // POST requests, and no content-length for other types.
   if (aRequest->body != NULL) {
-    sendHeader("Content-Length", sizeof(aRequest->body));
+    sendHeader("Content-Length", (aRequest->body).length());
   } else if (aHttpMethod == HTTP_METHOD_POST) {
     sendHeader("Content-Length", 0);
   }
