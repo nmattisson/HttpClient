@@ -1,5 +1,7 @@
 #include "HttpClient.h"
 
+#define LOGGING
+
 /**
 * Constructor, variables will initialise the TCPClient.
 */
@@ -58,19 +60,19 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
         return NULL;
     }
 
-    // Send HTTP Request
-    Serial.println("\r\nHttpClient>\tStart of HTTP Request.");
-
     // Send initial headers (only HTTP 1.0 is supported for now).
     client.print(aHttpMethod);
     client.print(" ");
     client.print(aRequest->path);
     client.print(" HTTP/1.0\r\n");
 
+    #ifdef LOGGING
+    Serial.println("HttpClient>\tStart of HTTP Request.");
     Serial.print(aHttpMethod);
     Serial.print(" ");
     Serial.print(aRequest->path);
     Serial.print(" HTTP/1.0\r\n");
+    #endif
 
     // Send General and Request Headers.
     sendHeader("Connection", "close");
@@ -101,13 +103,16 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
 
     // Empty line to finish headers
     client.println();
-    Serial.println();
     client.flush();
 
     // Send HTTP Request body.
-    Serial.println(aRequest->body);
     client.println(aRequest->body);
+
+    #ifdef LOGGING
+    Serial.println();
+    Serial.println(aRequest->body);
     Serial.println("HttpClient>\tEnd of HTTP Request.");
+    #endif
 
     unsigned int bytes = 0;
     while(!bytes && client.connected()) {
@@ -115,10 +120,17 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
         delay(200);
     }
 
-    Serial.println("\r\nHttpClient>\tStart of HTTP Response.");
+    #ifdef LOGGING
+    Serial.print("\r\nHttpClient>\tStart of HTTP Response of ");
+    Serial.print(bytes);
+    Serial.println(" bytes.");
+    Serial.print("HttpClient>\tBuffer Size: ");
+    Serial.print(sizeof(buffer));
+    Serial.print("\r\n");
+    #endif
+
     for (unsigned int i = 0;  i  < bytes; i++) {
         char c = client.read();
-        Serial.print(c);
         if (c == -1) {
             Serial.println("HttpClient>\tError: No data available.");
             break;
@@ -131,7 +143,11 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
         }
     }
 
+    #ifdef LOGGING
+    Serial.print(buffer);
     Serial.println("\r\nHttpClient>\tEnd of HTTP Response.\n");
+    #endif
+
     client.stop();
 
     String raw_response(buffer);
