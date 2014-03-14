@@ -109,22 +109,26 @@ http_response_t* HttpClient::request(http_request_t *aRequest, http_header_t hea
     client.println(aRequest->body);
     Serial.println("HttpClient>\tEnd of HTTP Request.");
 
-    int bytes = 0;
+    unsigned int bytes = 0;
     while(!bytes && client.connected()) {
         bytes = client.available();
         delay(200);
     }
 
     Serial.println("\r\nHttpClient>\tStart of HTTP Response.");
-    for (int i = 0;  i  < bytes; i++) {
+    for (unsigned int i = 0;  i  < bytes; i++) {
         char c = client.read();
         Serial.print(c);
         if (c == -1) {
             Serial.println("HttpClient>\tError: No data available.");
             break;
         }
-
-        buffer[i] = c;
+        // Check that received character fits in buffer before storing.
+        if (i < sizeof(buffer)-1) {
+            buffer[i] = c;
+        } else if ((i == sizeof(buffer)-1)) {
+            buffer[i] = '\0'; // Null terminate buffer
+        }
     }
 
     Serial.println("\r\nHttpClient>\tEnd of HTTP Response.\n");
