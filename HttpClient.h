@@ -56,9 +56,6 @@ public:
     /**
     * Public references to variables.
     */
-    //uint16_t port;
-    //const char *host;
-    //IPAddress ip;
     TCPClient client;
     char buffer[1024];
 
@@ -66,8 +63,6 @@ public:
     * Constructor.
     */
     HttpClient(void);
-    //HttpClient(const char *host, uint16_t port);
-    //HttpClient(IPAddress ip, uint16_t port);
 
     /**
     * HTTP request methods.
