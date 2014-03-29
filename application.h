@@ -44,6 +44,4 @@
 #include "spark_wiring_udp.h"
 #include "spark_wiring_time.h"
 
-#include "HttpClient.h"
-
 #endif /* APPLICATION_H_ */

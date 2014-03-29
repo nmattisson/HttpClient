@@ -1,4 +1,5 @@
 #include "application.h"
+#include "HttpClient.h"
 
 /**
 * Declaring the variables.
