@@ -46,7 +46,7 @@ void HttpClient::sendHeader(const char* aHeaderName)
 * in the aResponse struct and set the headers and the options in the aRequest
 * struct.
 */
-void HttpClient::request(http_response_t &aResponse, http_request_t &aRequest, http_header_t headers[], const char* aHttpMethod)
+void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[], const char* aHttpMethod)
 {
     // If a proper response code isn't received it will be set to -1.
     aResponse.status = -1;

@@ -68,54 +68,59 @@ public:
     * HTTP request methods.
     * Can't use 'delete' as name since it's a C++ keyword.
     */
-    void get(http_response_t &aResponse, http_request_t &aRequest)
+    void get(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aResponse, aRequest, NULL, HTTP_METHOD_GET);
+        request(aRequest, aResponse, NULL, HTTP_METHOD_GET);
     }
 
-    void post(http_response_t &aResponse, http_request_t &aRequest)
+    void post(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aResponse, aRequest, NULL, HTTP_METHOD_POST);
+        request(aRequest, aResponse, NULL, HTTP_METHOD_POST);
     }
 
-    void put(http_response_t &aResponse, http_request_t &aRequest)
+    void put(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aResponse, aRequest, NULL, HTTP_METHOD_PUT);
+        request(aRequest, aResponse, NULL, HTTP_METHOD_PUT);
     }
 
-    void del(http_response_t &aResponse, http_request_t &aRequest)
+    void del(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aResponse, aRequest, NULL, HTTP_METHOD_DELETE);
+        request(aRequest, aResponse, NULL, HTTP_METHOD_DELETE);
     }
 
-    void get(http_response_t &aResponse, http_request_t &aRequest, http_header_t headers[])
+    void get(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
     {
-        request(aResponse, aRequest, headers, HTTP_METHOD_GET);
+        request(aRequest, aResponse, headers, HTTP_METHOD_GET);
     }
 
-    void post(http_response_t &aResponse, http_request_t &aRequest, http_header_t headers[])
+    void post(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
     {
-        request(aResponse, aRequest, headers, HTTP_METHOD_POST);
+        request(aRequest, aResponse, headers, HTTP_METHOD_POST);
     }
 
-    void put(http_response_t &aResponse, http_request_t &aRequest, http_header_t headers[])
+    void put(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
     {
-        request(aResponse, aRequest, headers, HTTP_METHOD_PUT);
+        request(aRequest, aResponse, headers, HTTP_METHOD_PUT);
     }
 
-    void del(http_response_t &aResponse, http_request_t &aRequest, http_header_t headers[])
+    void del(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
     {
-        request(aResponse, aRequest, headers, HTTP_METHOD_DELETE);
+        request(aRequest, aResponse, headers, HTTP_METHOD_DELETE);
     }
 
 private:
     /**
     * Underlying HTTP methods.
     */
-    void request(http_response_t &aResponse, http_request_t &aRequest, http_header_t headers[], const char* aHttpMethod);
+    void request(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[], const char* aHttpMethod);
     void sendHeader(const char* aHeaderName, const char* aHeaderValue);
     void sendHeader(const char* aHeaderName, const int aHeaderValue);
     void sendHeader(const char* aHeaderName);
 };
 
 #endif /* __HTTP_CLIENT_H_ */
+
+cp ../src/application.cpp ../../../HttpClient/
+cp ../inc/application.h ../../../HttpClient/
+cp ../src/HttpClient.cpp ../../../HttpClient/
+cp ../inc/HttpClient.h ../../../HttpClient/
