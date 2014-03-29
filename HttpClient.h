@@ -119,8 +119,3 @@ private:
 };
 
 #endif /* __HTTP_CLIENT_H_ */
-
-cp ../src/application.cpp ../../../HttpClient/
-cp ../inc/application.h ../../../HttpClient/
-cp ../src/HttpClient.cpp ../../../HttpClient/
-cp ../inc/HttpClient.h ../../../HttpClient/
