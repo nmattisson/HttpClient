@@ -58,21 +58,22 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     // If a proper response code isn't received it will be set to -1.
     aResponse.status = -1;
 
-    if (client.connect(aRequest.hostname.c_str(), aRequest.port)) {
-        #ifdef LOGGING
+    bool connected = client.connect(aRequest.hostname.c_str(), aRequest.port);
+    if (!connected) {
+        client.stop();
+        return;
+    }
+
+    #ifdef LOGGING
+    if (connected) {
         Serial.print("HttpClient>\tConnecting to: ");
         Serial.print(aRequest.hostname);
         Serial.print(":");
         Serial.println(aRequest.port);
-        #endif
     } else {
-        #ifdef LOGGING
         Serial.println("HttpClient>\tConnection failed.");
-        #endif
-
-        client.stop();
-        return;
     }
+    #endif
 
     //
     // Send HTTP Request
