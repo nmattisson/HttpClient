@@ -189,6 +189,8 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
                 #ifdef LOGGING
                 Serial.println("HttpClient>\tError: No data available.");
                 #endif
+
+                break;
             }
 
             // Check that received character fits in buffer before storing.
