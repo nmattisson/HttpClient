@@ -1,6 +1,7 @@
 #include "HttpClient.h"
 
 #define LOGGING
+#define TIMEOUT 5000 // Allow maximum 5s between data packets.
 
 /**
 * Constructor.
@@ -61,6 +62,7 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     bool connected = client.connect(aRequest.hostname.c_str(), aRequest.port);
     if (!connected) {
         client.stop();
+        // If TCP Client can't connect to host, exit here.
         return;
     }
 
@@ -76,7 +78,7 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     #endif
 
     //
-    // Send HTTP Request
+    // Send HTTP Headers
     //
 
     // Send initial headers (only HTTP 1.0 is supported for now).
@@ -132,7 +134,10 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     client.println();
     client.flush();
 
-    // Send HTTP Request body if applicable.
+    //
+    // Send HTTP Request Body
+    //
+
     if (aRequest.body != NULL) {
         client.println(aRequest.body);
 
@@ -145,34 +150,27 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     Serial.println("HttpClient>\tEnd of HTTP Request.");
     #endif
 
-    // Allowing incoming data within 5 seconds, but
-    // close at end of stream. The first value of client.available() might not
-    // represent the whole response.
-    unsigned int i = 0;
+    //
+    // Receive HTTP Response
+    //
+    // The first value of client.available() might not represent the
+    // whole response, so after the first chunk of data is received instead
+    // of terminating the connection there is a delay and another attempt
+    // to read data.
+    // The loop exits when the connection is closed, or if there is a
+    // timeout or an error.
+
+    unsigned int bufferPosition = 0;
     unsigned long lastRead = millis();
-    bool keepWaiting = true;
-    while (keepWaiting) {
-        if(!client.connected()) {
-            #ifdef LOGGING
-            Serial.println("HttpClient>\tClient disconnected/end of stream.");
-            #endif
+    unsigned long firstRead = millis();
+    bool error = false;
+    bool timeout = false;
 
-            break;
-        }
-
-        if((millis() - lastRead > 5000)) {
-            #ifdef LOGGING
-            Serial.println("HttpClient>\tError: Timeout while reading response.");
-            #endif
-
-            break;
-        }
-
-        int bytes = client.available();
-
+    do {
         #ifdef LOGGING
+        int bytes = client.available();
         if(bytes) {
-            Serial.print("\r\nHttpClient>\tStart of HTTP Response (chunk) of ");
+            Serial.print("\r\nHttpClient>\tReceiving TCP transaction of ");
             Serial.print(bytes);
             Serial.println(" bytes.");
         }
@@ -186,38 +184,51 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
             lastRead = millis();
 
             if (c == -1) {
+                error = true;
+
                 #ifdef LOGGING
                 Serial.println("HttpClient>\tError: No data available.");
                 #endif
-                keepWaiting = false;
-                break;
             }
 
             // Check that received character fits in buffer before storing.
-            if (i < sizeof(buffer)-1) {
-                buffer[i] = c;
-            } else if ((i == sizeof(buffer)-1)) {
+            if (bufferPosition < sizeof(buffer)-1) {
+                buffer[bufferPosition] = c;
+            } else if ((bufferPosition == sizeof(buffer)-1)) {
+                buffer[bufferPosition] = '\0'; // Null-terminate buffer
+                client.stop();
+                error = true;
+
                 #ifdef LOGGING
                 Serial.println("HttpClient>\tError: Response body larger than buffer.");
                 #endif
-                buffer[i] = '\0'; // Null terminate buffer
-                client.stop();
-                keepWaiting = false;
-                break;
             }
-            i++;
+            bufferPosition++;
         }
+
         #ifdef LOGGING
-        if(bytes) {
-            Serial.print("\r\nHttpClient>\tEnd of HTTP Response chunk of ");
-            Serial.print(bytes);
-            Serial.println(" bytes.");
+        if (bytes) {
+            Serial.print("\r\nHttpClient>\tEnd of TCP transaction.");
         }
         #endif
-    }
+
+        // Check that there hasn't been more than 5s since last read.
+        timeout = millis() - lastRead > TIMEOUT;
+
+        // Unless there has been an error or timeout wait 200ms to allow server
+        // to respond or close connection.
+        if (!error && !timeout) {
+            delay(200);
+        }
+    } while (client.connected() && !timeout && !error);
 
     #ifdef LOGGING
-    Serial.println("HttpClient>\tEnd of HTTP Response.");
+    if (timeout) {
+        Serial.println("\r\nHttpClient>\tError: Timeout while reading response.");
+    }
+    Serial.print("\r\nHttpClient>\tEnd of HTTP Response (");
+    Serial.print(millis() - firstRead);
+    Serial.println("ms).");
     #endif
     client.stop();
 
