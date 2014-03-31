@@ -128,50 +128,50 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     unsigned int i = 0;
     unsigned long lastRead = millis();
     bool keepWaiting = true;
-      while ( keepWaiting) {
-    	if(!client.connected()) {
-			  Serial.println("HttpClient>\tClient disconnected/end of stream");
-			  break;
-    	}
+    while ( keepWaiting) {
+        if(!client.connected()) {
+            Serial.println("HttpClient>\tClient disconnected/end of stream");
+            break;
+        }
 
-    	if((millis() - lastRead > 5000)) {
-    		Serial.println("HttpClient>\tError: Timeout while reading response");
-    		break;
-    	}
+        if((millis() - lastRead > 5000)) {
+            Serial.println("HttpClient>\tError: Timeout while reading response");
+            break;
+        }
 
-    	int bytes = bytes = client.available();
+        int bytes = bytes = client.available();
 
-    	if(bytes) {
-			#ifdef LOGGING
-			Serial.print("\r\nHttpClient>\tStart of HTTP Response (chunk) of ");
-			Serial.print(bytes);
-			Serial.println(" bytes.");
-		  	#endif
-    	}
+        if(bytes) {
+            #ifdef LOGGING
+            Serial.print("\r\nHttpClient>\tStart of HTTP Response (chunk) of ");
+            Serial.print(bytes);
+            Serial.println(" bytes.");
+            #endif
+        }
 
         while (client.available()) {
-          char c = client.read();
-          lastRead = millis();
+            char c = client.read();
+            lastRead = millis();
 
-          if (c == -1) {
-			  Serial.println("HttpClient>\tError: No data available.");
-			  keepWaiting = false;
-			  break;
-		  }
+            if (c == -1) {
+                Serial.println("HttpClient>\tError: No data available.");
+                keepWaiting = false;
+                break;
+            }
 
-          // Check that received character fits in buffer before storing.
-		 if (i < sizeof(buffer)-1) {
-			 buffer[i] = c;
-		 } else if ((i == sizeof(buffer)-1)) {
-			 Serial.println("HttpClient>\tError: Response body larger than buffer.");
-			 buffer[i] = '\0'; // Null terminate buffer
-			 client.stop();
-			 keepWaiting = false;
-			 break;
-		 }
-		 i++;
+            // Check that received character fits in buffer before storing.
+            if (i < sizeof(buffer)-1) {
+                buffer[i] = c;
+            } else if ((i == sizeof(buffer)-1)) {
+                Serial.println("HttpClient>\tError: Response body larger than buffer.");
+                buffer[i] = '\0'; // Null terminate buffer
+                client.stop();
+                keepWaiting = false;
+                break;
+            }
+            i++;
         }
-      }
+    }
 
     #ifdef LOGGING
     Serial.println(buffer);
