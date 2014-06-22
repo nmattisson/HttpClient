@@ -46,7 +46,7 @@ void loop() {
     //request.body = "{\"key\":\"value\"}";
 
     // Get request
-    http.get(response, request, headers);
+    http.get(request, response, headers);
     Serial.print("Application>\tResponse status: ");
     Serial.println(response.status);
 
