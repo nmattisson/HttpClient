@@ -8,10 +8,10 @@
 /**
  * Defines for the HTTP methods.
  */
-#define HTTP_METHOD_GET    "GET"
-#define HTTP_METHOD_POST   "POST"
-#define HTTP_METHOD_PUT    "PUT"
-#define HTTP_METHOD_DELETE "DELETE"
+static const char* HTTP_METHOD_GET    = "GET";
+static const char* HTTP_METHOD_POST   = "POST";
+static const char* HTTP_METHOD_PUT    = "PUT";
+static const char* HTTP_METHOD_DELETE = "DELETE";
 
 /**
  * This struct is used to pass additional HTTP headers such as API-keys.
