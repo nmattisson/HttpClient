@@ -59,7 +59,10 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     // If a proper response code isn't received it will be set to -1.
     aResponse.status = -1;
 
-    bool connected = client.connect(aRequest.hostname.c_str(), aRequest.port);
+    // NOTE: The default port tertiary statement is unpredictable if the request structure is not initialised
+    // http_request_t request = {0} or memset(&request, 0, sizeof(http_request_t)) should be used 
+    // to ensure all fields are zero
+    bool connected = client.connect(aRequest.hostname.c_str(), (aRequest.port) ? aRequest.port : 80 );
     if (!connected) {
         client.stop();
         // If TCP Client can't connect to host, exit here.
