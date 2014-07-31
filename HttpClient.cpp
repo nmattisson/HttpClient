@@ -256,6 +256,7 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
         return;
     }
     // Return the entire message body from bodyPos+4 till end.
-    aResponse.body = raw_response.substring(bodyPos+4);
+    aResponse.body = "";
+    aResponse.body += raw_response.substring(bodyPos+4);
     aResponse.status = atoi(statusCode.c_str());
 }
