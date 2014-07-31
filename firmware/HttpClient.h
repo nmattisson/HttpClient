@@ -33,6 +33,7 @@ typedef struct
 typedef struct
 {
   String hostname;
+  IPAddress ip;
   String path;
   // TODO: Look at setting the port by default.
   //int port = 80;

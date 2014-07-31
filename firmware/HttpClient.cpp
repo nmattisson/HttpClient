@@ -60,25 +60,36 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     aResponse.status = -1;
 
     // NOTE: The default port tertiary statement is unpredictable if the request structure is not initialised
-    // http_request_t request = {0} or memset(&request, 0, sizeof(http_request_t)) should be used 
+    // http_request_t request = {0} or memset(&request, 0, sizeof(http_request_t)) should be used
     // to ensure all fields are zero
-    bool connected = client.connect(aRequest.hostname.c_str(), (aRequest.port) ? aRequest.port : 80 );
-    if (!connected) {
-        client.stop();
-        // If TCP Client can't connect to host, exit here.
-        return;
+    bool connected = false;
+    if(aRequest.hostname!=NULL) {
+        connected = client.connect(aRequest.hostname.c_str(), (aRequest.port) ? aRequest.port : 80 );
+    }   else {
+        connected = client.connect(aRequest.ip, aRequest.port);
     }
 
     #ifdef LOGGING
     if (connected) {
-        Serial.print("HttpClient>\tConnecting to: ");
-        Serial.print(aRequest.hostname);
+        if(aRequest.hostname!=NULL) {
+            Serial.print("HttpClient>\tConnecting to: ");
+            Serial.print(aRequest.hostname);
+        } else {
+            Serial.print("HttpClient>\tConnecting to IP: ");
+            Serial.print(aRequest.ip);
+        }
         Serial.print(":");
         Serial.println(aRequest.port);
     } else {
         Serial.println("HttpClient>\tConnection failed.");
     }
     #endif
+
+    if (!connected) {
+        client.stop();
+        // If TCP Client can't connect to host, exit here.
+        return;
+    }
 
     //
     // Send HTTP Headers
@@ -100,15 +111,9 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
 
     // Send General and Request Headers.
     sendHeader("Connection", "close"); // Not supporting keep-alive for now.
-    sendHeader("HOST", aRequest.hostname.c_str());
-
-    // TODO: Support for connecting with IP address instead of URL
-    // if (aRequest.hostname == NULL) {
-    //     //sendHeader("HOST", ip);
-    // } else {
-    //     sendHeader("HOST", aRequest.hostname);
-    // }
-
+    if(aRequest.hostname!=NULL) {
+        sendHeader("HOST", aRequest.hostname.c_str());
+    }
 
     //Send Entity Headers
     // TODO: Check the standard, currently sending Content-Length : 0 for empty
