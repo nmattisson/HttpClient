@@ -158,6 +158,10 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     Serial.println("HttpClient>\tEnd of HTTP Request.");
     #endif
 
+    // clear response buffer
+    memset(&buffer[0], 0, sizeof(buffer));
+
+
     //
     // Receive HTTP Response
     //
