@@ -219,6 +219,7 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
             }
             bufferPosition++;
         }
+        buffer[bufferPosition] = '\0'; // Null-terminate buffer
 
         #ifdef LOGGING
         if (bytes) {
