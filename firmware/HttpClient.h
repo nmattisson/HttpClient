@@ -12,6 +12,7 @@ static const char* HTTP_METHOD_GET    = "GET";
 static const char* HTTP_METHOD_POST   = "POST";
 static const char* HTTP_METHOD_PUT    = "PUT";
 static const char* HTTP_METHOD_DELETE = "DELETE";
+static const char* HTTP_METHOD_PATCH = "PATCH";
 
 /**
  * This struct is used to pass additional HTTP headers such as API-keys.
@@ -107,6 +108,11 @@ public:
     void del(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
     {
         request(aRequest, aResponse, headers, HTTP_METHOD_DELETE);
+    }
+	
+    void patch(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
+    {
+        request(aRequest, aResponse, headers, HTTP_METHOD_PATCH);
     }
 
 private:
