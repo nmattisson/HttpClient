@@ -40,6 +40,7 @@ typedef struct
   //int port = 80;
   int port;
   String body;
+  uint16_t timeout;
 } http_request_t;
 
 /**
