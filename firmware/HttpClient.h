@@ -73,22 +73,22 @@ public:
     */
     void get(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aRequest, aResponse, NULL, HTTP_METHOD_GET);
+        request(aRequest, aResponse, (http_header_t*)NULL, HTTP_METHOD_GET);
     }
 
     void post(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aRequest, aResponse, NULL, HTTP_METHOD_POST);
+        request(aRequest, aResponse, (http_header_t*)NULL, HTTP_METHOD_POST);
     }
 
     void put(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aRequest, aResponse, NULL, HTTP_METHOD_PUT);
+        request(aRequest, aResponse, (http_header_t*)NULL, HTTP_METHOD_PUT);
     }
 
     void del(http_request_t &aRequest, http_response_t &aResponse)
     {
-        request(aRequest, aResponse, NULL, HTTP_METHOD_DELETE);
+        request(aRequest, aResponse, (http_header_t*)NULL, HTTP_METHOD_DELETE);
     }
 
     void get(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
