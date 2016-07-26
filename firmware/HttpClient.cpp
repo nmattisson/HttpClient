@@ -176,8 +176,9 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     unsigned long firstRead = millis();
     bool error = false;
     bool timeout = false;
-    
     uint16_t actualTimeout = aRequest.timeout == 0 ? DEFAULT_TIMEOUT : aRequest.timeout;
+    char lastChar = 0;
+    bool inHeaders = true;
 
     do {
         #ifdef LOGGING
@@ -206,6 +207,25 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
                 break;
             }
 
+            if (inHeaders) {
+                if ((c == '\n') && (lastChar == '\n')) {
+                    // End of headers.  Grab the status code and reset the buffer.
+                    aResponse.status = atoi(&buffer[9]);
+
+                    memset(&buffer[0], 0, sizeof(buffer));
+                    bufferPosition = 0;
+                    inHeaders = false;
+                    #ifdef LOGGING
+                    Serial.print("\r\nHttpClient>\tEnd of HTTP Headers (");
+                    Serial.print(aResponse.status);
+                    Serial.println(")");
+                    #endif
+                    continue;
+                } else if (c != '\r') {
+                    lastChar = c;
+                }
+            }
+
             // Check that received character fits in buffer before storing.
             if (bufferPosition < sizeof(buffer)-1) {
                 buffer[bufferPosition] = c;
@@ -215,12 +235,13 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
                 error = true;
 
                 #ifdef LOGGING
-                Serial.println("HttpClient>\tError: Response body larger than buffer.");
+                Serial.println("\r\nHttpClient>\tError: Response body larger than buffer.");
                 #endif
+                break;
             }
             bufferPosition++;
         }
-        buffer[bufferPosition] = '\0'; // Null-terminate buffer
+        // We don't need to null terminate the buffer since it was zeroed to start with, or null terminated when it reached capacity.
 
         #ifdef LOGGING
         if (bytes) {
@@ -248,18 +269,12 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     #endif
     client.stop();
 
-    String raw_response(buffer);
-
-    // Not super elegant way of finding the status code, but it works.
-    String statusCode = raw_response.substring(9,12);
-
     #ifdef LOGGING
     Serial.print("HttpClient>\tStatus Code: ");
-    Serial.println(statusCode);
+    Serial.println(aResponse.status);
     #endif
 
-    int bodyPos = raw_response.indexOf("\r\n\r\n");
-    if (bodyPos == -1) {
+    if (inHeaders) {
         #ifdef LOGGING
         Serial.println("HttpClient>\tError: Can't find HTTP response body.");
         #endif
@@ -267,7 +282,5 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
         return;
     }
     // Return the entire message body from bodyPos+4 till end.
-    aResponse.body = "";
-    aResponse.body += raw_response.substring(bodyPos+4);
-    aResponse.status = atoi(statusCode.c_str());
+    aResponse.body = buffer;
 }
