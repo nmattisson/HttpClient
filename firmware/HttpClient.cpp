@@ -1,6 +1,6 @@
 #include "HttpClient.h"
 
-static const uint16_t TIMEOUT = 5000; // Allow maximum 5s between data packets.
+static const uint16_t DEFAULT_TIMEOUT = 5000; // Allow maximum 5s between data packets.
 
 /**
 * Constructor.
@@ -176,6 +176,8 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     unsigned long firstRead = millis();
     bool error = false;
     bool timeout = false;
+    
+    uint16_t actualTimeout = aRequest.timeout == 0 ? DEFAULT_TIMEOUT : aRequest.timeout;
 
     do {
         #ifdef LOGGING
@@ -227,7 +229,7 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
         #endif
 
         // Check that there hasn't been more than 5s since last read.
-        timeout = millis() - lastRead > TIMEOUT;
+        timeout = millis() - lastRead > actualTimeout;
 
         // Unless there has been an error or timeout wait 200ms to allow server
         // to respond or close connection.
