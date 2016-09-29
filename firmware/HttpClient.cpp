@@ -98,7 +98,9 @@ void HttpClient::request(http_request_t &aRequest, http_response_t &aResponse, h
     client.print(aHttpMethod);
     client.print(" ");
     client.print(aRequest.path);
-    client.print(" HTTP/1.0\r\n");
+    // Supported with HTTP 1.1 also , for HTTP 1.0 uncomment the below line
+    //client.print(" HTTP/1.0\r\n"); 
+    client.print(" HTTP/1.1\r\n"); 
 
     #ifdef LOGGING
     Serial.println("HttpClient>\tStart of HTTP Request.");
