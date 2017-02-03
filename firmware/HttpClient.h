@@ -5,6 +5,7 @@
 #include "spark_wiring_string.h"
 #include "spark_wiring_tcpclient.h"
 #include "spark_wiring_usbserial.h"
+#include "IChunkStream.h"
 
 /**
  * Defines for the HTTP methods.
@@ -101,7 +102,12 @@ public:
     {
         request(aRequest, aResponse, headers, HTTP_METHOD_POST);
     }
-
+    
+    void post(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[], IChunkStream* stream)
+    {
+        request(aRequest, aResponse, headers, HTTP_METHOD_POST, stream);
+    }
+    
     void put(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[])
     {
         request(aRequest, aResponse, headers, HTTP_METHOD_PUT);
@@ -122,6 +128,7 @@ private:
     * Underlying HTTP methods.
     */
     void request(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[], const char* aHttpMethod);
+    void request(http_request_t &aRequest, http_response_t &aResponse, http_header_t headers[], const char* aHttpMethod, IChunkStream* stream);
     void sendHeader(const char* aHeaderName, const char* aHeaderValue);
     void sendHeader(const char* aHeaderName, const int aHeaderValue);
     void sendHeader(const char* aHeaderName);
