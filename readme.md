@@ -20,6 +20,7 @@ http_header_t headers[] = {
     //  { "Content-Type", "application/json" },
     //  { "Accept" , "application/json" },
     { "Accept" , "*/*"},
+    { "User-Agent" , "A user agent."}, // Note: Some websites require a User-Agent
     { NULL, NULL } // NOTE: Always terminate headers will NULL
 };
 
