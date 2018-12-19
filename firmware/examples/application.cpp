@@ -30,9 +30,9 @@ void loop() {
     Serial.println();
     Serial.println("Application>\tStart of Loop.");
     // Request path and body can be set at runtime or at setup.
-    request.hostname = "www.timeapi.org";
+    request.hostname = "www.worldclockapi.com";
     request.port = 80;
-    request.path = "/utc/now";
+    request.path = "/api/json/utc/now";
 
     // The library also supports sending a body with your request:
     //request.body = "{\"key\":\"value\"}";
