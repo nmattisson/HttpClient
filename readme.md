@@ -20,7 +20,7 @@ http_header_t headers[] = {
     //  { "Content-Type", "application/json" },
     //  { "Accept" , "application/json" },
     { "Accept" , "*/*"},
-    { NULL, NULL } // NOTE: Always terminate headers will NULL
+    { NULL, NULL } // NOTE: Always terminate headers with NULL
 };
 
 http_request_t request;
